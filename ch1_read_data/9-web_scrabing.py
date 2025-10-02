@@ -18,7 +18,7 @@ headers = {
 response = requests.get(url, headers=headers)
 soup = BeautifulSoup(response.content, "lxml")
 
-books = soup.find_all('div',{'class':'w-full col-span-6 md:col-span-4 xl:col-span-3'})
+books = soup.find_all('div', {'class':'w-full col-span-6 md:col-span-4 xl:col-span-3'})
 
 booktitles = []
 authors = []
