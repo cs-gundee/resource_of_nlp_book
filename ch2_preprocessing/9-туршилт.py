@@ -1,113 +1,64 @@
-import nltk
-nltk.download('punkt')
-nltk.download('webtext')
+tweet_sample= "How to take control of your #debt https://medium.com/change-your-mind/a-guide-to-family-finance-strategies-732a5369d529.#Best advice for #family #financial #success (@MashaRusanov)"
 
-from nltk.corpus import webtext
+def processRow(row):
+    import re
+    import nltk
+    nltk.download('wordnet')
+    from textblob import TextBlob
+    from nltk.corpus import stopwords
+    from nltk.stem import PorterStemmer
+    from textblob import Word
+    from nltk.util import ngrams
+    import re
+    from wordcloud import WordCloud, STOPWORDS
+    from nltk.tokenize import word_tokenize
 
-# Firefox текст файлын өгүүлбэр ба үгсийг авах
-wt_sentences = webtext.sents('firefox.txt')
-wt_words = webtext.words('firefox.txt')
+    tweet = row
+    # үсгийг жижигрүүлэх
+    tweet.lower()
+    # "\u002c", "x96" гэх мэт юникод тэмдэгтийг устгах
+    tweet = re.sub(r'(\\u[0-9A-Fa-f]+)', r'', tweet)
+    tweet = re.sub(r'[^\x00-\x7f]', r'', tweet)
+    # ямар ч url -г URL руу хувиргах
+    tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL', tweet)
+    # ямар ч @Username -г "AT_USER" болгох
+    tweet = re.sub('@[^\s]+','AT_USER', tweet)
+    # илүү хоосон зайг устгах
+    tweet = re.sub('[\s]+', ' ', tweet)
+    tweet = re.sub('[\n]+', ' ', tweet)
+    # үсэг, тоо бус тэмдэгтүүдийн хоосон зайг хасах
+    tweet = re.sub(r'[^\w]', ' ', tweet)
+    # үгийн урд байрлах хашилтыг устгах """
+    tweet = re.sub(r'#([^\s]+)', r'\1', tweet)
+    # # тэмдэгттэй үгийг дан үг болгох
+    tweet = re.sub(r'#([^\s]+)', r'\1', tweet)
+    # :( болон :) тэмдэгт мөрийг устгах
+    tweet = tweet.replace(':)','')
+    tweet = tweet.replace(':(','')
+    # тоог арилгах
+    tweet = ''.join([i for i in tweet if not i.isdigit()])
+    # анхаарлын тэмдэг устгах
+    tweet = re.sub(r"(\!)\1+", ' ', tweet)
+    # асуултын тэмдэг устгах
+    tweet = re.sub(r"(\?)\1+", ' ', tweet)
+    # цэг устгах
+    tweet = re.sub(r"(\.)\1+", ' ', tweet)
+    # лемма
+    from textblob import Word
+    tweet =" ".join([Word(word).lemmatize() for word in tweet.split()])
+    # язгуур олох
+    # st = PorterStemmer()
+    # tweet=" ".join([st.stem(word) for word in tweet.split()])
+        # Эможи устгах
+    tweet = re.sub(':\)|;\)|:-\)|\(-:|:-D|=D|:P|xD|X-p|\^\^|:-*|\^\.\^|\^\-\^|\^\_\^|\,-\)|\)-:|:\'\(|:\(|:-\(|:\S|T\.T|\.\_\.|:<|:-\S|:-<|\*\-\*|:O|=O|=\-O|O\.o|XO|O\_O|:-\@|=/|:/|X\-\(|>\.<|>=\(|D:', '', tweet)
+    # тэгшлэх
+    tweet = tweet.strip('\'"')
+    row = tweet
+    return row
 
-# Шаардлагатай сангууд
-# Давтамж тооцоолоход хэрэглэх сангууд
-from nltk.probability import FreqDist
-from nltk.corpus import stopwords
-import string
+# функцийг дуудаж ажиллуулах
+processRow(tweet_sample)
 
-# Үгийн тоо шалгах
-len(wt_sentences)
-# Гаралт: 1144
-len(wt_words)
-# Гаралт: 102457
+# Гаралт:
+# 'How to take control of your debt URL Best advice for family financial success AT_USER'
 
-# Үгсийн давтамжийн тархалт үүсгэх
-frequency_dist = nltk.FreqDist(wt_words) 
-
-# Давтамжийг хэвлэх
-print(frequency_dist)
-# Гаралт: <FreqDist with 8296 samples and 102457 outcomes>
-
-# Хамгийн их давтагдсан 5 үг
-print(frequency_dist.most_common(5))
-# Гаралт: [('.', 2428), ('in', 2203), ('to', 2130), ('"', 1971), ('the', 1762)]
-
-
-sorted_frequency_dist = sorted(
-    frequency_dist.items(), 
-    key = lambda x: x[1], 
-    reverse = True
-)
-
-print(sorted_frequency_dist) 
-# Гаралт: [('.', 2428), ('in', 2203), ('to', 2130),…]
-
-# 3-с дээш үсэгтэй үгсийг шүүж авах
-large_words = dict([(k,v) for k,v in frequency_dist.items() if len(k)>3])
-
-# Давтамжийг дахин тооцох
-frequency_dist = nltk.FreqDist(large_words)
-
-# Давтамжийн тархалтыг графикаар харах
-# cumulative = False нь хуримтлагдсан биш, шууд давтамжийг харуулна
-frequency_dist.plot(50, cumulative=False)
-
-
-#========================================================================
-
-# wordcloud санг суулгах
-!pip install wordcloud
-
-# сангуудыг импортлох
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-
-# WordCloud үүсгэх
-# frequency_dist (үг, давтамж) өгөгдлийг ашиглан үгэн үүлс байгуулна
-wcloud = WordCloud(
-    width = 800,            # Зургийн өргөн
-    height = 400,           # Зургийн өндөр
-    background_color = 'white'  # Дэвсгэрийн өнгө
-).generate_from_frequencies(frequency_dist)
-
-# WordCloud дүрслэх
-plt.figure(figsize=(10, 5))           # Зургийн хэмжээ
-plt.imshow(wcloud, interpolation='bilinear')  # Илүү зөөлөн дүрслэл
-plt.axis("off")                       # Тэнхлэгүүдийг нуух
-plt.show()
-
-#========================================================================
-
-import nltk
-from nltk.corpus import stopwords, webtext
-from nltk.probability import FreqDist
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-import string
-
-nltk.download('webtext')
-nltk.download('stopwords')
-
-wt_words = webtext.words('firefox.txt')
-
-# Англи хэлний stopwords болон тэмдэгтийг устгах
-stop_words = set(stopwords.words('english'))
-clean_words = [
-    w.lower() for w in wt_words
-    if w.lower() not in stop_words and w.isalpha()
-]
-
-# Давтамжийн тархалт үүсгэх
-frequency_dist = FreqDist(clean_words)
-
-# WordCloud үүсгэх
-wordcloud = WordCloud(
-    width = 800,
-    height = 400,
-    background_color = 'white'
-).generate_from_frequencies(frequency_dist)
-
-# Зураг гаргах
-plt.figure(figsize=(12, 6))
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis('off')
-plt.show()
