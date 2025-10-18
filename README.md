@@ -7,3 +7,4 @@
 2. [Текст өгөгдлийг урьдчилан боловсруулах](https://github.com/cs-gundee/resource_of_nlp_book/tree/main/ch2_preprocessing)
 3. [Текстийг онцлог шинж болгон хөрвүүлэх](https://github.com/cs-gundee/resource_of_nlp_book/tree/main/ch3_feature)
 4. [Дэвшилтэт эх хэлний боловсруулалт](https://github.com/cs-gundee/resource_of_nlp_book/tree/main/ch4_advanced_nlp)
+5. [Эх хэлний боловсруулалтыг программд нэвтрүүлэх](https://github.com/cs-gundee/resource_of_nlp_book/tree/main/ch5_nlp_in_app)
