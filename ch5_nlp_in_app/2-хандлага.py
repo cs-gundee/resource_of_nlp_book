@@ -218,11 +218,10 @@ plt.style.use('fivethirtyeight')  # Графикийн загвар тохиру
 
 
 # VADER сэтгэгдлийн шинжилгээ хийх модуль
+!pip install vaderSentiment
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer 
-
 # Өнгөний палитр авах (зураг, графикт өнгө тохируулахад ашиглана)
 cp = sns.color_palette()
-
 # VADER сэтгэгдлийн шинжилгээ хийх объектыг үүсгэж байна
 analyzer = SentimentIntensityAnalyzer()
 
@@ -242,7 +241,6 @@ for row in df['Text']:
 
 # Хандлагын шинжилгээний үр дүнг датафрейм болгон хувиргах
 df_sentiments=pd.DataFrame(emptyline)
-
 # Эхний 5 мөрийг харах
 df_sentiments.head(5)
 
@@ -259,8 +257,7 @@ df_sentiments.head(5)
 
 
 # Санал хүсэлтийн өгөгдөл болон хандлагын оноог нэгтгэх
-df_c = pd.concat([df.reset_index(drop=True), d], axis=1)
-
+df_c = pd.concat([df.reset_index(drop=True), df_sentiments], axis=1)
 # Эхний 3 мөрийг харах
 df_c.head(3)
 
@@ -268,7 +265,6 @@ df_c.head(3)
 
 # Compound оноог эерэг болон сөрөг хандлага руу ангилах
 df_c['Sentiment'] = np.where(df_c['compound'] >= 0 , 'Positive', 'Negative')
-
 # Эхний 5 мөрийг харах
 df_c.head(5)
 
@@ -277,13 +273,11 @@ df_c.head(5)
 
 # Эерэг болон сөрөг хандлагын тоог тоолох
 result=df_c['Sentiment'].value_counts()
-
 # Хандлагын тоог баганан графикаар харуулах
-result.plot(kind='bar', rot=0, color='br');
+result.plot(kind='bar', rot=0, color=['b', 'r']);
 
 
 # Бүтээгдэхүүн тус бүрийн хандлагын тоог тоолох
 result=df_c.groupby('ProductId')['Sentiment'].value_counts().unstack() 
-
 # Сөрөг ба эерэг хандлагын тоог баганан графикаар дүрслэх
 result[['Negative', 'Positive']].plot(kind='bar', rot=0, color='rb')
